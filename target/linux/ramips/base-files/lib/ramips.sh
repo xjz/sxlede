@@ -524,8 +524,11 @@ ramips_board_detect() {
 		name="widora-neo"
 		;;
 	*"WiTi")
-                name="witi"
+        name="witi"
 		;;
+	*"Suasea Gateway")
+	    name="sxgateway"
+	    ;;
 	*"WIZARD 8800")
 		name="wizard8800"
 		;;

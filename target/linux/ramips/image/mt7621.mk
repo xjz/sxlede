@@ -182,6 +182,15 @@ define Device/witi
 endef
 TARGET_DEVICES += witi
 
+define Device/sxgateway
+  DTS := SXGW
+  IMAGE_SIZE := $(ralink_default_fw_size_16M)
+  DEVICE_TITLE := Suasea Gateway
+  DEVICE_PACKAGES := kmod-usb3 kmod-usb-ledtrig-usbport kmod-ata-core kmod-ata-ahci
+endef
+TARGET_DEVICES += sxgateway
+
+
 define Device/wndr3700v5
   DTS := WNDR3700V5
   IMAGE_SIZE := $(ralink_default_fw_size_16M)
