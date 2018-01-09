@@ -135,13 +135,13 @@
 		};
 
 		cpc: cpc@1fbf0000 {
-			     compatible = "mtk,mt7621-cpc";
-			     reg = <0x1fbf0000 0x8000>;
+			 compatible = "mtk,mt7621-cpc";
+			 reg = <0x1fbf0000 0x8000>;
 		};
 
 		mc: mc@1fbf8000 {
-			    compatible = "mtk,mt7621-mc";
-			    reg = <0x1fbf8000 0x8000>;
+			compatible = "mtk,mt7621-mc";
+			reg = <0x1fbf8000 0x8000>;
  		};
 
 		uartlite: uartlite@c00 {
@@ -160,19 +160,19 @@
 		};
 
 		uartlite2: uartlite2@d00 {
-		  compatible = "ns16550a";
-		  reg = <0xd00 0x100>;
+		    compatible = "ns16550a";
+			reg = <0xd00 0x100>;
 
-		  clocks = <&sysclock>;
-		  clock-frequency = <50000000>;
+			clocks = <&sysclock>;
+			clock-frequency = <50000000>;
 
-		  interrupt-parent = <&gic>;
-		  interrupts = <GIC_SHARED 27 IRQ_TYPE_LEVEL_HIGH>;
+			interrupt-parent = <&gic>;
+			interrupts = <GIC_SHARED 27 IRQ_TYPE_LEVEL_HIGH>;
 
-      fifo-size = <16>;
-		  reg-shift = <2>;
-		  reg-io-width = <4>;
-		  no-loopback-test;
+			fifo-size = <16>;
+			reg-shift = <2>;
+			reg-io-width = <4>;
+			no-loopback-test;
 
 			pinctrl-names = "default";
 			pinctrl-0 = <&uart2_pins>;
@@ -181,19 +181,19 @@
 		};
 
 		uartlite3: uartlite3@e00 {
-		  compatible = "ns16550a";
-		  reg = <0xe00 0x100>;
+		    compatible = "ns16550a";
+			reg = <0xe00 0x100>;
 
-		  clocks = <&sysclock>;
-		  clock-frequency = <50000000>;
+			clocks = <&sysclock>;
+			clock-frequency = <50000000>;
 
-		  interrupt-parent = <&gic>;
-		  interrupts = <GIC_SHARED 28 IRQ_TYPE_LEVEL_HIGH>;
+			interrupt-parent = <&gic>;
+			interrupts = <GIC_SHARED 28 IRQ_TYPE_LEVEL_HIGH>;
 
-      fifo-size = <16>;
-		  reg-shift = <2>;
-		  reg-io-width = <4>;
-		  no-loopback-test;
+			fifo-size = <16>;
+			reg-shift = <2>;
+			reg-io-width = <4>;
+			no-loopback-test;
 
 			pinctrl-names = "default";
 			pinctrl-0 = <&uart3_pins>;
