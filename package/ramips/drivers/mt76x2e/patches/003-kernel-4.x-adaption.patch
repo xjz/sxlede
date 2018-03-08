@@ -1,0 +1,104 @@
+Index: mt76x2e-p4rev-113843/src/os/linux/cfg80211/cfg80211.c
+===================================================================
+--- mt76x2e-p4rev-113843.orig/src/os/linux/cfg80211/cfg80211.c	2018-03-05 11:29:48.582756373 +0800
++++ mt76x2e-p4rev-113843/src/os/linux/cfg80211/cfg80211.c	2018-03-05 11:29:48.578756373 +0800
+@@ -45,6 +45,8 @@
+ 
+ #define RTMP_MODULE_OS
+ 
++#include <linux/version.h>
++
+ #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,10,0))
+ #include <linux/random.h>
+ #endif
+@@ -608,7 +610,7 @@
+ 	{
+ 		pSinfo->txrate.flags = RATE_INFO_FLAGS_MCS;
+ 		if (StaInfo.TxRateFlags & RT_CMD_80211_TXRATE_BW_40)
+-			pSinfo->txrate.flags |= RATE_INFO_FLAGS_40_MHZ_WIDTH;
++			pSinfo->txrate.flags |= RATE_INFO_BW_40;
+ 
+ 		if (StaInfo.TxRateFlags & RT_CMD_80211_TXRATE_SHORT_GI)
+ 			pSinfo->txrate.flags |= RATE_INFO_FLAGS_SHORT_GI;
+@@ -621,20 +623,20 @@
+ 		pSinfo->txrate.legacy = StaInfo.TxRateMCS;
+ 	} 
+ 
+-	pSinfo->filled |= STATION_INFO_TX_BITRATE;
++	pSinfo->filled |= BIT(NL80211_STA_INFO_TX_BITRATE);
+ 
+ 	/* fill signal */
+ 	pSinfo->signal = StaInfo.Signal;
+-	pSinfo->filled |= STATION_INFO_SIGNAL;
++	pSinfo->filled |= BIT(NL80211_STA_INFO_SIGNAL);
+ 
+ #ifdef CONFIG_AP_SUPPORT
+ 	/* fill tx count */
+ 	pSinfo->tx_packets = StaInfo.TxPacketCnt;
+-	pSinfo->filled |= STATION_INFO_TX_PACKETS;
++	pSinfo->filled |= BIT(NL80211_STA_INFO_TX_PACKETS);
+ 
+ 	/* fill inactive time */
+ 	pSinfo->inactive_time = StaInfo.InactiveTime;
+-	pSinfo->filled |= STATION_INFO_INACTIVE_TIME;
++	pSinfo->filled |= BIT(NL80211_STA_INFO_INACTIVE_TIME);
+ #endif /* CONFIG_AP_SUPPORT */
+ 
+ 	return 0;
+@@ -1258,10 +1260,9 @@
+ 
+ 	/* return the information to upper layer */
+ 	pSurvey->channel = ((CFG80211_CB *)(SurveyInfo.pCfg80211))->pCfg80211_Channels;
+-	pSurvey->filled = SURVEY_INFO_CHANNEL_TIME_BUSY |
+-						SURVEY_INFO_CHANNEL_TIME_EXT_BUSY;
+-	pSurvey->channel_time_busy = SurveyInfo.ChannelTimeBusy; /* unit: us */
+-	pSurvey->channel_time_ext_busy = SurveyInfo.ChannelTimeExtBusy;
++	pSurvey->filled = SURVEY_INFO_TIME_BUSY |SURVEY_INFO_TIME_EXT_BUSY;
++	pSurvey->time_busy = SurveyInfo.ChannelTimeBusy; /* unit: us */
++	pSurvey->time_ext_busy = SurveyInfo.ChannelTimeExtBusy;
+ 
+ 	CFG80211DBG(RT_DEBUG_TRACE, ("80211> busy time = %ld %ld\n",
+ 				(ULONG)SurveyInfo.ChannelTimeBusy,
+Index: mt76x2e-p4rev-113843/src/os/linux/cfg80211/cfg80211_util.c
+===================================================================
+--- mt76x2e-p4rev-113843.orig/src/os/linux/cfg80211/cfg80211_util.c	2018-03-05 11:29:48.582756373 +0800
++++ mt76x2e-p4rev-113843/src/os/linux/cfg80211/cfg80211_util.c	2018-03-05 11:29:48.578756373 +0800
+@@ -955,8 +955,7 @@
+                                 0,       //CFG_TODO return 0 in dbm
+                                 frame,
+                                 len,
+-                                NL80211_RXMGMT_FLAG_ANSWERED,
+-                                GFP_ATOMIC);
++                                NL80211_RXMGMT_FLAG_ANSWERED);
+ #else
+ #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0))
+ 	return cfg80211_rx_mgmt(pNetDev->ieee80211_ptr,
+@@ -1016,7 +1015,7 @@
+ 	NdisZeroMemory(&sinfo, sizeof(sinfo));
+ 
+ /* If get error here, be sure patch the cfg80211_new_sta.patch into kernel. */
+-	sinfo.filled = STATION_INFO_ASSOC_REQ_IES;
++	//sinfo.filled = STATION_INFO_ASSOC_REQ_IES;
+ 
+ 	mgmt = (struct ieee80211_mgmt *) assoc_frame;	
+ 	sinfo.assoc_req_ies_len = assoc_len - 24 - 4;
+@@ -1076,4 +1075,4 @@
+ #endif /* LINUX_VERSION_CODE: 3.8.0 */
+ }
+ 
+-#endif /* RT_CFG80211_SUPPORT */
+\ No newline at end of file
++#endif /* RT_CFG80211_SUPPORT */
+Index: mt76x2e-p4rev-113843/src/os/linux/rt_profile.c
+===================================================================
+--- mt76x2e-p4rev-113843.orig/src/os/linux/rt_profile.c	2018-03-05 11:27:43.362759574 +0800
++++ mt76x2e-p4rev-113843/src/os/linux/rt_profile.c	2018-03-05 11:32:39.622751999 +0800
+@@ -250,7 +250,7 @@
+ 		{
+ #ifndef OS_ABL_SUPPORT
+ 			// TODO: need to roll back when convert into OSABL code
+-				 fsize = (ULONG)srcf->f_dentry->d_inode->i_size;
++				 fsize = (ULONG)file_inode(srcf)->i_size;
+ 				if (buf_size < (fsize + 1))
+ 					buf_size = fsize + 1;
+ #endif /* OS_ABL_SUPPORT */

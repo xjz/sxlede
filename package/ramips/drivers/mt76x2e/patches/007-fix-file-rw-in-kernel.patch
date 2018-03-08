@@ -1,0 +1,82 @@
+Index: mt76x2e-p4rev-113843/src/os/linux/rt_linux.c
+===================================================================
+--- mt76x2e-p4rev-113843.orig/src/os/linux/rt_linux.c	2018-03-08 20:34:12.575121376 +0800
++++ mt76x2e-p4rev-113843/src/os/linux/rt_linux.c	2018-03-08 20:39:35.981603911 +0800
+@@ -36,6 +36,10 @@
+ #include "rt_os_util.h"
+ #include "dot11i_wpa.h"
+ #include <linux/rtnetlink.h>
++#include <linux/fs.h>
++#include <asm/segment.h>
++#include <asm/uaccess.h>
++#include <linux/buffer_head.h>
+ 
+ #if defined(CONFIG_RA_HW_NAT) || defined(CONFIG_RA_HW_NAT_MODULE)
+ #include "../../../linux-kernel/net/nat/hw_nat/ra_nat.h"
+@@ -850,7 +854,8 @@
+  *******************************************************************************/
+ RTMP_OS_FD RtmpOSFileOpen(char *pPath, int flag, int mode)
+ {
+-	struct file *filePtr;
++    struct file *filePtr;
++    mm_segment_t oldfs;
+ 
+ 	if (flag == RTMP_FILE_RDONLY)
+ 		flag = O_RDONLY;
+@@ -860,8 +865,12 @@
+ 		flag = O_CREAT;
+ 	else if (flag == RTMP_FILE_TRUNC)
+ 		flag = O_TRUNC;
+-
++    
++    oldfs = get_fs();
++    set_fs(get_ds());
+ 	filePtr = filp_open(pPath, flag, 0);
++    set_fs(oldfs);
++    
+ 	if (IS_ERR(filePtr)) {
+ 		DBGPRINT(RT_DEBUG_ERROR,
+ 			 ("%s(): Error %ld opening %s\n", __FUNCTION__,
+@@ -887,19 +896,34 @@
+ 
+ int RtmpOSFileRead(RTMP_OS_FD osfd, char *pDataPtr, int readLen)
+ {
+-	/* The object must have a read method */
+-	if (osfd->f_op && osfd->f_op->read) {
+-		return osfd->f_op->read(osfd, pDataPtr, readLen, &osfd->f_pos);
+-	} else {
+-		DBGPRINT(RT_DEBUG_ERROR, ("no file read method\n"));
+-		return -1;
+-	}
++    unsigned long long offset = 0;
++    mm_segment_t oldfs;
++    int ret;
++
++    oldfs = get_fs();
++    set_fs(get_ds());
++
++    ret = vfs_read(osfd, pDataPtr, readLen, &offset);
++
++    set_fs(oldfs);
++    return ret;
++    
+ }
+ 
+ 
+ int RtmpOSFileWrite(RTMP_OS_FD osfd, char *pDataPtr, int writeLen)
+ {
+-	return osfd->f_op->write(osfd, pDataPtr, (size_t) writeLen, &osfd->f_pos);
++    unsigned long long offset = 0;
++    mm_segment_t oldfs;
++    int ret;
++
++    oldfs = get_fs();
++    set_fs(get_ds());
++
++    ret = vfs_write(osfd, pDataPtr, writeLen, &offset);
++
++    set_fs(oldfs);
++    return ret;
+ }
+ 
+ 

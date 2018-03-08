@@ -1,0 +1,12 @@
+Index: mt76x2e-p4rev-113843/build/Makefile
+===================================================================
+--- mt76x2e-p4rev-113843.orig/build/Makefile	2018-03-05 10:20:41.022862419 +0800
++++ mt76x2e-p4rev-113843/build/Makefile	2018-03-05 10:41:52.546829908 +0800
+@@ -2,6 +2,7 @@
+ 
+ ifeq ($(CONFIG_SUPPORT_OPENWRT),y)
+ EXTRA_CFLAGS = -I$(src)/../src/include -I$(src)/../src/ate/include
++EXTRA_CFLAGS +=-Wno-error=date-time
+ DRV_NAME = mt76x2e
+ RT_WIFI_DIR = ../src
+ else
